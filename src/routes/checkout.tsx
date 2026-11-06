@@ -171,6 +171,13 @@ function Checkout() {
         {/* Product side panel */}
         <aside className="order-1 space-y-4 md:order-2">
           <div className="rounded-lg bg-snack-black p-5 text-white">
+            <img
+              src="/product-stack.webp"
+              alt=""
+              width={2279}
+              height={1485}
+              className="mb-4 h-auto w-full"
+            />
             <div className="text-xs font-bold uppercase text-snack-yellow">You're getting</div>
             <h1 className="mt-1 font-display text-2xl font-bold uppercase leading-tight">
               {funnel.product}

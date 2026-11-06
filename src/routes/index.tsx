@@ -7,7 +7,6 @@ import {
   FunnelFooter,
   GuaranteeRow,
   GuaranteeSeal,
-  ProductMockup,
   SectionTitle,
 } from "@/components/funnel/ui";
 import {
@@ -194,8 +193,15 @@ function SalesPage() {
           you've never run an ad, never built a funnel, and have fewer than 1,000 followers.
         </p>
 
-        <div className="mt-6">
-          <ProductMockup />
+        <div className="-mx-2 mt-6 sm:-mx-16">
+          <img
+            src="/product-stack.webp"
+            alt="The Client Snack System: 4-step install guide, walkthrough videos, members area and 4 bonuses for $17"
+            width={2279}
+            height={1485}
+            fetchPriority="high"
+            className="h-auto w-full"
+          />
         </div>
 
         <p className="mt-10 font-display text-lg font-bold uppercase sm:text-xl">

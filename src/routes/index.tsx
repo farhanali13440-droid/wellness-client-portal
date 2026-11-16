@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { funnel, money } from "@/lib/funnel-config";
+import { CheckoutModalProvider, useOpenCheckout } from "@/components/funnel/checkout-modal";
 import {
   Check,
   CtaButton,
@@ -41,10 +42,11 @@ export const Route = createFileRoute("/")({
 const testimonials: { name: string; role: string; quote: string; image?: string }[] = [];
 
 function Cta({ label = "Yes! I want paying buyers every day" }: { label?: string }) {
+  const openCheckout = useOpenCheckout();
   return (
     <div className="mx-auto max-w-xl">
       <CtaButton
-        href="/checkout"
+        onClick={openCheckout}
         sub={
           <>
             → Get instant access now for just {money(funnel.prices.main)}{" "}
@@ -168,6 +170,14 @@ const faqs = [
 ];
 
 function SalesPage() {
+  return (
+    <CheckoutModalProvider>
+      <SalesPageBody />
+    </CheckoutModalProvider>
+  );
+}
+
+function SalesPageBody() {
   return (
     <main className="min-h-screen bg-snack-black font-body text-white">
       {/* Top bar */}

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { funnel, goToPayment, loadOrder, money } from "@/lib/funnel-config";
+import { funnel, money } from "@/lib/funnel-config";
 import { Check } from "@/components/funnel/ui";
 import { UpsellLayout } from "@/components/funnel/upsell";
 
@@ -27,10 +27,14 @@ function Oto() {
       }
       yesLabel={`Yes! Upgrade my order — ${money(p.oto)}`}
       yesSub="Add to your order · Covered by the 30-day guarantee"
-      onYes={() => goToPayment(funnel.paymentLinks.oto, "/thank-you", loadOrder()?.email)}
+      pay={{
+        planId: funnel.whopPlans.oto,
+        product: "Done-For-You Snack Funnel Kit",
+        price: p.oto,
+        resumeKey: "oto",
+      }}
       noLabel="No thanks — I'll build the funnel myself from scratch"
       onNo={() => (window.location.href = "/downsell")}
-      demo={!funnel.paymentLinks.oto}
     >
       <div className="space-y-4 text-base leading-relaxed text-white/85 sm:text-lg">
         <p>Congratulations — you're in. Your access is on its way to your inbox.</p>

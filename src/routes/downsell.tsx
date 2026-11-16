@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { funnel, goToPayment, loadOrder, money } from "@/lib/funnel-config";
+import { funnel, money } from "@/lib/funnel-config";
 import { Check } from "@/components/funnel/ui";
 import { UpsellLayout } from "@/components/funnel/upsell";
 
@@ -28,10 +28,14 @@ function Downsell() {
       }
       yesLabel={`Yes — give me the templates for ${money(p.downsell)}`}
       yesSub="Add to your order · Covered by the 30-day guarantee"
-      onYes={() => goToPayment(funnel.paymentLinks.downsell, "/thank-you", loadOrder()?.email)}
+      pay={{
+        planId: funnel.whopPlans.downsell,
+        product: "Snack Funnel Templates",
+        price: p.downsell,
+        resumeKey: "downsell",
+      }}
       noLabel="No thanks — take me to my purchase"
       onNo={() => (window.location.href = "/thank-you")}
-      demo={!funnel.paymentLinks.downsell}
     >
       <div className="space-y-4 text-base leading-relaxed text-white/85 sm:text-lg">
         <p>

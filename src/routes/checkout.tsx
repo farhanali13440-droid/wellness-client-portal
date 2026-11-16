@@ -3,11 +3,12 @@ import { useEffect, useState } from "react";
 import { funnel, money } from "@/lib/funnel-config";
 import { FunnelFooter, GuaranteeSeal } from "@/components/funnel/ui";
 import { CheckoutFlow } from "@/components/funnel/checkout-flow";
-import { readResume } from "@/components/funnel/whop-pay";
+import { readResume, whopPreconnectLinks } from "@/components/funnel/whop-pay";
 
 /** Standalone checkout page (same two-step flow as the sales-page popup) for direct links. */
 export const Route = createFileRoute("/checkout")({
   head: () => ({
+    links: whopPreconnectLinks,
     meta: [{ title: `Checkout | ${funnel.product}` }, { name: "robots", content: "noindex" }],
   }),
   component: Checkout,

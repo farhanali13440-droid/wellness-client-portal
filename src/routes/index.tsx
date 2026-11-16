@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { whopPreconnectLinks } from "@/components/funnel/whop-pay";
 import type { ReactNode } from "react";
 import { funnel, money } from "@/lib/funnel-config";
 import { CheckoutModalProvider, useOpenCheckout } from "@/components/funnel/checkout-modal";
@@ -23,6 +24,7 @@ const description =
 
 export const Route = createFileRoute("/")({
   head: () => ({
+    links: whopPreconnectLinks,
     meta: [
       { title },
       { name: "description", content: description },

@@ -1,6 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { CtaButton, FunnelFooter } from "@/components/funnel/ui";
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { readResume, WhopPay } from "@/components/funnel/whop-pay";
 import { loadOrder, money } from "@/lib/funnel-config";
 
@@ -77,6 +76,10 @@ export function UpsellLayout({
   );
 }
 
+/**
+ * Payment popup for the OTO / downsell. It stays mounted (hidden) from page load, so Whop's
+ * card form is already loaded by the time the buyer clicks "Yes".
+ */
 function UpsellPayDialog({
   pay,
   open,
@@ -86,17 +89,53 @@ function UpsellPayDialog({
   open: boolean;
   onOpenChange: (v: boolean) => void;
 }) {
-  const order = typeof window !== "undefined" ? loadOrder() : null;
+  const [order, setOrder] = useState<ReturnType<typeof loadOrder>>(null);
+  useEffect(() => setOrder(loadOrder()), []);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onOpenChange(false);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [open, onOpenChange]);
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[100dvh] w-full max-w-lg overflow-y-auto rounded-none bg-white p-5 font-body text-black sm:max-h-[92vh] sm:rounded-xl sm:p-6">
-        <DialogTitle className="font-display text-2xl font-bold uppercase leading-tight">
+    <div
+      className={`fixed inset-0 z-50 flex items-center justify-center bg-black/80 sm:p-4 ${
+        open ? "visible opacity-100" : "pointer-events-none invisible opacity-0"
+      } transition-opacity`}
+      onClick={() => onOpenChange(false)}
+      aria-hidden={!open}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="upsell-pay-title"
+        onClick={(e) => e.stopPropagation()}
+        className="relative max-h-[100dvh] w-full max-w-lg overflow-y-auto bg-white p-5 font-body text-black sm:max-h-[92vh] sm:rounded-xl sm:p-6"
+      >
+        <button
+          onClick={() => onOpenChange(false)}
+          aria-label="Close"
+          className="absolute right-4 top-4 rounded-sm text-2xl leading-none text-neutral-500 hover:text-black"
+        >
+          ×
+        </button>
+        <h2
+          id="upsell-pay-title"
+          className="pr-8 font-display text-2xl font-bold uppercase leading-tight"
+        >
           Add to your order
-        </DialogTitle>
-        <DialogDescription className="text-sm text-neutral-600">
+        </h2>
+        <p className="mt-1 text-sm text-neutral-600">
           {pay.product} — one-time payment of <strong>{money(pay.price)}</strong>
-        </DialogDescription>
-        {open && (
+        </p>
+        <div className="mt-4">
           <WhopPay
             planId={pay.planId}
             email={order?.email}
@@ -104,11 +143,11 @@ function UpsellPayDialog({
             resumeKey={pay.resumeKey}
             onPaid={() => (window.location.href = "/thank-you")}
           />
-        )}
-        <p className="text-center text-xs text-neutral-500">
+        </div>
+        <p className="mt-3 text-center text-xs text-neutral-500">
           🔒 Secure payment processed by Whop · 30-day money-back guarantee
         </p>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 }

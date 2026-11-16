@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { CheckoutFlow } from "@/components/funnel/checkout-flow";
-import { readResume } from "@/components/funnel/whop-pay";
+import { readResume, warmUpWhop } from "@/components/funnel/whop-pay";
 
 const Ctx = createContext<() => void>(() => {});
 
@@ -14,6 +14,7 @@ export function CheckoutModalProvider({ children }: { children: ReactNode }) {
 
   // Buyer coming back from a bank / PayPal verification step → reopen at payment.
   useEffect(() => {
+    warmUpWhop(); // download Whop's checkout in the background while the buyer reads
     const r = readResume();
     if (r?.key !== "main") return;
     if (r.paid) window.location.href = "/oto";

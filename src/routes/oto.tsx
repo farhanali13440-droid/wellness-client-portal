@@ -1,10 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { whopPreconnectLinks } from "@/components/funnel/whop-pay";
 import { funnel, money } from "@/lib/funnel-config";
 import { Check } from "@/components/funnel/ui";
 import { UpsellLayout } from "@/components/funnel/upsell";
 
 export const Route = createFileRoute("/oto")({
   head: () => ({
+    links: whopPreconnectLinks,
     meta: [
       { title: `Wait — your order isn't complete | ${funnel.brand}` },
       { name: "robots", content: "noindex" },

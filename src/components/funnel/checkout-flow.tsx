@@ -125,22 +125,28 @@ export function CheckoutFlow({ resumeToPayment }: { resumeToPayment?: boolean | 
           </div>
 
           {!order.bump && <Bump checked={false} onChange={setBump} compact />}
+        </div>
+      )}
 
-          <WhopPay
-            planId={planId}
-            email={order.email}
-            name={order.name}
-            resumeKey="main"
-            onPaid={() => (window.location.href = "/oto")}
-          />
+      {/* Mounted from step 1 (invisibly) so Whop's form is already loaded when the buyer arrives. */}
+      <div className={step === 2 ? "mt-4" : ""}>
+        <WhopPay
+          planId={planId}
+          email={order.email || undefined}
+          name={order.name || undefined}
+          resumeKey="main"
+          preload={step === 1}
+          onPaid={() => (window.location.href = "/oto")}
+        />
+      </div>
 
-          <div className="flex items-start gap-2 text-xs text-neutral-600">
-            <span className="text-base leading-none">🛡️</span>
-            <p>
-              <strong>30-day money-back guarantee.</strong> One-time payment, no subscription.
-              Payments are processed securely by Whop.
-            </p>
-          </div>
+      {step === 2 && (
+        <div className="mt-4 flex items-start gap-2 text-xs text-neutral-600">
+          <span className="text-base leading-none">🛡️</span>
+          <p>
+            <strong>30-day money-back guarantee.</strong> One-time payment, no subscription.
+            Payments are processed securely by Whop.
+          </p>
         </div>
       )}
     </div>

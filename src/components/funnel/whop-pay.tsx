@@ -1,14 +1,40 @@
-import { lazy, Suspense, useEffect, useState } from "react";
+import { Component, lazy, Suspense, useEffect, useState, type ReactNode } from "react";
 
 /**
  * Whop Elements checkout (card, plus Apple/Google Pay where available), rendered inside our page.
  * Loaded only in the browser: the SDK is served from Whop's CDN.
  */
+let modules: Promise<[typeof import("@whop/elements-react"), typeof import("@whop/elements")]>;
+function loadModules() {
+  modules ??= Promise.all([import("@whop/elements-react"), import("@whop/elements")]);
+  return modules;
+}
+
+/**
+ * Start downloading the checkout code and Whop's SDK in the background, so the card form
+ * appears instantly later. Call it when a page that sells something loads.
+ */
+export function warmUpWhop() {
+  if (typeof window === "undefined") return;
+  const go = () =>
+    void loadModules()
+      .then(([, { loadWhop }]) => loadWhop())
+      .catch(() => {
+        /* shown to the buyer (with a retry) if it still fails when the form is needed */
+      });
+  if ("requestIdleCallback" in window) window.requestIdleCallback(go, { timeout: 2000 });
+  else setTimeout(go, 500);
+}
+
+/** Connection hints for the sales pages' <head>: start talking to Whop before it's needed. */
+export const whopPreconnectLinks = [
+  { rel: "preconnect", href: "https://cdn.whop.com" },
+  { rel: "preconnect", href: "https://api.whop.com", crossOrigin: "anonymous" as const },
+  { rel: "dns-prefetch", href: "https://whop.com" },
+];
+
 const WhopElementsCheckout = lazy(async () => {
-  const [{ WhopElements, Checkout, CheckoutElement }, { loadWhop }] = await Promise.all([
-    import("@whop/elements-react"),
-    import("@whop/elements"),
-  ]);
+  const [{ WhopElements, Checkout, CheckoutElement }, { loadWhop }] = await loadModules();
   const elements = loadWhop();
 
   function Inner({
@@ -59,6 +85,7 @@ export function WhopPay({
   name,
   resumeKey,
   onPaid,
+  preload,
 }: {
   planId: string;
   email?: string | undefined;
@@ -66,6 +93,8 @@ export function WhopPay({
   /** Identifies this payment step, so a buyer returning from a bank (3-D Secure) check lands back here. */
   resumeKey: string;
   onPaid: () => void;
+  /** Load the form invisibly ahead of time (e.g. while the buyer fills in step 1). */
+  preload?: boolean | undefined;
 }) {
   const [returnUrl, setReturnUrl] = useState<string>();
   useEffect(() => {
@@ -76,6 +105,7 @@ export function WhopPay({
   }, [resumeKey]);
 
   if (!planId) {
+    if (preload) return null;
     return (
       <div className="rounded-lg border-2 border-dashed border-neutral-300 p-5 text-center">
         <p className="text-sm text-neutral-600">
@@ -93,21 +123,52 @@ export function WhopPay({
     );
   }
 
-  if (!returnUrl) return <Loading />;
+  if (!returnUrl) return preload ? null : <Loading />;
 
   return (
-    <div className="min-h-[320px]">
-      <Suspense fallback={<Loading />}>
-        <WhopElementsCheckout
-          planId={planId}
-          email={email}
-          name={name}
-          returnUrl={returnUrl}
-          onPaid={onPaid}
-        />
-      </Suspense>
+    <div
+      className={preload ? "pointer-events-none invisible h-0 overflow-hidden" : "min-h-[320px]"}
+      aria-hidden={preload || undefined}
+    >
+      <LoadErrorBoundary>
+        <Suspense fallback={<Loading />}>
+          <WhopElementsCheckout
+            planId={planId}
+            email={email}
+            name={name}
+            returnUrl={returnUrl}
+            onPaid={onPaid}
+          />
+        </Suspense>
+      </LoadErrorBoundary>
     </div>
   );
+}
+
+/** If Whop's checkout can't load (ad blocker, bad connection), show a retry instead of breaking the popup. */
+class LoadErrorBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
+  override state = { failed: false };
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+  override render() {
+    if (!this.state.failed) return this.props.children;
+    return (
+      <div className="flex min-h-[320px] flex-col items-center justify-center gap-3 rounded-lg border border-neutral-200 p-5 text-center text-sm text-neutral-600">
+        <p>
+          <strong className="text-black">The secure payment form didn't load.</strong>
+          <br />
+          Please check your connection or pause any ad blocker, then try again.
+        </p>
+        <button
+          onClick={() => window.location.reload()}
+          className="rounded-md bg-snack-black px-5 py-3 font-semibold text-snack-yellow"
+        >
+          Try again
+        </button>
+      </div>
+    );
+  }
 }
 
 function Loading() {

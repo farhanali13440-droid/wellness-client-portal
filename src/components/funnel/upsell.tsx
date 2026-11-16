@@ -3,6 +3,7 @@ import { CtaButton, FunnelFooter } from "@/components/funnel/ui";
 import { readResume, WhopPay } from "@/components/funnel/whop-pay";
 import { loadOrder, money } from "@/lib/funnel-config";
 import { purchaseThenGo, track } from "@/lib/pixel";
+import { recordPaid } from "@/lib/order-tracking";
 
 type Pay = { planId: string; product: string; price: number; resumeKey: string };
 
@@ -34,7 +35,13 @@ export function UpsellLayout({
     const r = readResume();
     if (r?.key !== pay.resumeKey) return;
     if (r.paid)
-      purchaseThenGo(pay.resumeKey, { value: pay.price, content_name: pay.product }, "/thank-you");
+      void recordPaid(pay.resumeKey as "oto" | "downsell").then(() =>
+        purchaseThenGo(
+          pay.resumeKey,
+          { value: pay.price, content_name: pay.product },
+          "/thank-you",
+        ),
+      );
     else setOpen(true);
   }, [pay.resumeKey]);
 
@@ -154,10 +161,12 @@ function UpsellPayDialog({
             name={order?.name}
             resumeKey={pay.resumeKey}
             onPaid={() =>
-              purchaseThenGo(
-                pay.resumeKey,
-                { value: pay.price, content_name: pay.product },
-                "/thank-you",
+              void recordPaid(pay.resumeKey as "oto" | "downsell").then(() =>
+                purchaseThenGo(
+                  pay.resumeKey,
+                  { value: pay.price, content_name: pay.product },
+                  "/thank-you",
+                ),
               )
             }
           />

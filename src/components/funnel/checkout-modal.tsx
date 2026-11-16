@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/compone
 import { CheckoutFlow, mainPurchase } from "@/components/funnel/checkout-flow";
 import { loadOrder, funnel } from "@/lib/funnel-config";
 import { purchaseThenGo, track } from "@/lib/pixel";
+import { captureUtm, recordPaid } from "@/lib/order-tracking";
 import { readResume, warmUpWhop } from "@/components/funnel/whop-pay";
 
 const Ctx = createContext<() => void>(() => {});
@@ -17,9 +18,13 @@ export function CheckoutModalProvider({ children }: { children: ReactNode }) {
   // Buyer coming back from a bank / PayPal verification step → reopen at payment.
   useEffect(() => {
     warmUpWhop(); // download Whop's checkout in the background while the buyer reads
+    captureUtm();
     const r = readResume();
     if (r?.key !== "main") return;
-    if (r.paid) purchaseThenGo("main", mainPurchase(!!loadOrder()?.bump), "/oto");
+    if (r.paid)
+      void recordPaid("main").then(() =>
+        purchaseThenGo("main", mainPurchase(!!loadOrder()?.bump), "/oto"),
+      );
     else {
       setResume(true);
       setOpen(true);

@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as ConsultationRouteImport } from './routes/consultation'
 import { Route as DownsellRouteImport } from './routes/downsell'
+import { Route as Leads1340RouteImport } from './routes/leads1340'
 import { Route as OtoRouteImport } from './routes/oto'
 import { Route as ThankYouRouteImport } from './routes/thank-you'
 
@@ -36,6 +37,11 @@ const DownsellRoute = DownsellRouteImport.update({
   path: '/downsell',
   getParentRoute: () => rootRouteImport,
 } as any)
+const Leads1340Route = Leads1340RouteImport.update({
+  id: '/leads1340',
+  path: '/leads1340',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OtoRoute = OtoRouteImport.update({
   id: '/oto',
   path: '/oto',
@@ -52,6 +58,7 @@ export interface FileRoutesByFullPath {
   '/checkout': typeof CheckoutRoute
   '/consultation': typeof ConsultationRoute
   '/downsell': typeof DownsellRoute
+  '/leads1340': typeof Leads1340Route
   '/oto': typeof OtoRoute
   '/thank-you': typeof ThankYouRoute
 }
@@ -60,6 +67,7 @@ export interface FileRoutesByTo {
   '/checkout': typeof CheckoutRoute
   '/consultation': typeof ConsultationRoute
   '/downsell': typeof DownsellRoute
+  '/leads1340': typeof Leads1340Route
   '/oto': typeof OtoRoute
   '/thank-you': typeof ThankYouRoute
 }
@@ -69,21 +77,36 @@ export interface FileRoutesById {
   '/checkout': typeof CheckoutRoute
   '/consultation': typeof ConsultationRoute
   '/downsell': typeof DownsellRoute
+  '/leads1340': typeof Leads1340Route
   '/oto': typeof OtoRoute
   '/thank-you': typeof ThankYouRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/checkout' | '/consultation' | '/downsell' | '/oto' | '/thank-you'
+    | '/'
+    | '/checkout'
+    | '/consultation'
+    | '/downsell'
+    | '/leads1340'
+    | '/oto'
+    | '/thank-you'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/checkout' | '/consultation' | '/downsell' | '/oto' | '/thank-you'
+  to:
+    | '/'
+    | '/checkout'
+    | '/consultation'
+    | '/downsell'
+    | '/leads1340'
+    | '/oto'
+    | '/thank-you'
   id:
     | '__root__'
     | '/'
     | '/checkout'
     | '/consultation'
     | '/downsell'
+    | '/leads1340'
     | '/oto'
     | '/thank-you'
   fileRoutesById: FileRoutesById
@@ -93,6 +116,7 @@ export interface RootRouteChildren {
   CheckoutRoute: typeof CheckoutRoute
   ConsultationRoute: typeof ConsultationRoute
   DownsellRoute: typeof DownsellRoute
+  Leads1340Route: typeof Leads1340Route
   OtoRoute: typeof OtoRoute
   ThankYouRoute: typeof ThankYouRoute
 }
@@ -127,6 +151,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DownsellRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/leads1340': {
+      id: '/leads1340'
+      path: '/leads1340'
+      fullPath: '/leads1340'
+      preLoaderRoute: typeof Leads1340RouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/oto': {
       id: '/oto'
       path: '/oto'
@@ -149,6 +180,7 @@ const rootRouteChildren: RootRouteChildren = {
   CheckoutRoute: CheckoutRoute,
   ConsultationRoute: ConsultationRoute,
   DownsellRoute: DownsellRoute,
+  Leads1340Route: Leads1340Route,
   OtoRoute: OtoRoute,
   ThankYouRoute: ThankYouRoute,
 }

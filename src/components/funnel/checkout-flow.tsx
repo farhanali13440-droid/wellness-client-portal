@@ -3,6 +3,7 @@ import { funnel, loadOrder, money, saveOrder, type OrderDraft } from "@/lib/funn
 import { CtaButton } from "@/components/funnel/ui";
 import { WhopPay } from "@/components/funnel/whop-pay";
 import { purchaseThenGo, track } from "@/lib/pixel";
+import { recordLead, recordPaid } from "@/lib/order-tracking";
 
 const input =
   "w-full rounded-md border border-neutral-300 bg-white px-3 py-3 text-base text-black outline-none focus:border-snack-yellow-dark focus:ring-2 focus:ring-snack-yellow";
@@ -30,17 +31,20 @@ export function CheckoutFlow({ resumeToPayment }: { resumeToPayment?: boolean | 
       email: String(f.get("email")).trim(),
       phone: String(f.get("phone")).trim(),
       bump: order.bump,
+      id: order.id,
     };
     setOrder(o);
     saveOrder(o);
+    void recordLead(o);
     track("Lead", { content_name: funnel.product, value: total, currency: "USD" });
     setStep(2);
   }
 
   function setBump(bump: boolean) {
-    const o = { ...order, bump };
+    const o = { ...(loadOrder() ?? order), bump };
     setOrder(o);
     saveOrder(o);
+    if (step === 2) void recordLead(o);
   }
 
   return (
@@ -138,7 +142,10 @@ export function CheckoutFlow({ resumeToPayment }: { resumeToPayment?: boolean | 
           name={order.name || undefined}
           resumeKey="main"
           preload={step === 1}
-          onPaid={() => purchaseThenGo("main", mainPurchase(order.bump), "/oto")}
+          onPaid={async () => {
+            await recordPaid("main");
+            purchaseThenGo("main", mainPurchase(order.bump), "/oto");
+          }}
         />
       </div>
 

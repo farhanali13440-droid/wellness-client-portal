@@ -5,6 +5,7 @@ import { FunnelFooter, GuaranteeSeal } from "@/components/funnel/ui";
 import { CheckoutFlow, mainPurchase } from "@/components/funnel/checkout-flow";
 import { loadOrder } from "@/lib/funnel-config";
 import { purchaseThenGo, track } from "@/lib/pixel";
+import { captureUtm, recordPaid } from "@/lib/order-tracking";
 import { readResume, whopPreconnectLinks } from "@/components/funnel/whop-pay";
 
 /** Standalone checkout page (same two-step flow as the sales-page popup) for direct links. */
@@ -20,10 +21,13 @@ function Checkout() {
   const [ready, setReady] = useState(false);
   const [resume, setResume] = useState(false);
   useEffect(() => {
+    captureUtm();
     const r = readResume();
     if (r?.key === "main") {
       if (r.paid) {
-        purchaseThenGo("main", mainPurchase(!!loadOrder()?.bump), "/oto");
+        void recordPaid("main").then(() =>
+          purchaseThenGo("main", mainPurchase(!!loadOrder()?.bump), "/oto"),
+        );
         return;
       }
       setResume(true);

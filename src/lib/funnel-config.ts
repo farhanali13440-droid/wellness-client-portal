@@ -51,7 +51,14 @@ export const funnel = {
 export const money = (n: number) => `${funnel.currency}${n}`;
 
 /** Checkout details kept for the rest of the funnel (this browser only). */
-export type OrderDraft = { name: string; email: string; phone: string; bump: boolean };
+export type OrderDraft = {
+  name: string;
+  email: string;
+  phone: string;
+  bump: boolean;
+  /** Row id in the leads table, once saved. */
+  id?: string | undefined;
+};
 
 const KEY = "snack-order";
 

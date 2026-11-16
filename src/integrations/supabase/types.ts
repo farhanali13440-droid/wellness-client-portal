@@ -47,6 +47,54 @@ export type Database = {
         }
         Relationships: []
       }
+      funnel_orders: {
+        Row: {
+          bump: boolean
+          created_at: string
+          email: string
+          id: string
+          name: string
+          phone: string | null
+          purchases: string[]
+          status: string
+          total_usd: number
+          updated_at: string
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_source: string | null
+        }
+        Insert: {
+          bump?: boolean
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          phone?: string | null
+          purchases?: string[]
+          status?: string
+          total_usd?: number
+          updated_at?: string
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_source?: string | null
+        }
+        Update: {
+          bump?: boolean
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          phone?: string | null
+          purchases?: string[]
+          status?: string
+          total_usd?: number
+          updated_at?: string
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_source?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

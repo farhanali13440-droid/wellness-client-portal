@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { META_PIXEL_ID, metaPixelScript, track } from "../lib/pixel";
 
 function NotFoundComponent() {
   return (
@@ -115,8 +116,19 @@ function RootShell({ children }: { children: ReactNode }) {
     <html lang="en">
       <head>
         <HeadContent />
+        {/* Meta Pixel */}
+        <script dangerouslySetInnerHTML={{ __html: metaPixelScript }} />
       </head>
       <body>
+        <noscript>
+          <img
+            height="1"
+            width="1"
+            style={{ display: "none" }}
+            alt=""
+            src={`https://www.facebook.com/tr?id=${META_PIXEL_ID}&ev=PageView&noscript=1`}
+          />
+        </noscript>
         {children}
         <Scripts />
       </body>
@@ -126,6 +138,16 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const router = useRouter();
+
+  // The base code tracks the first page load; also track pages opened inside the app.
+  useEffect(
+    () =>
+      router.subscribe("onResolved", (e) => {
+        if (e.fromLocation && e.fromLocation.pathname !== e.toLocation.pathname) track("PageView");
+      }),
+    [router],
+  );
 
   return (
     <QueryClientProvider client={queryClient}>

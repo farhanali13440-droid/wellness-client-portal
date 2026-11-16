@@ -2,7 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { funnel, money } from "@/lib/funnel-config";
 import { FunnelFooter, GuaranteeSeal } from "@/components/funnel/ui";
-import { CheckoutFlow } from "@/components/funnel/checkout-flow";
+import { CheckoutFlow, mainPurchase } from "@/components/funnel/checkout-flow";
+import { loadOrder } from "@/lib/funnel-config";
+import { purchaseThenGo, track } from "@/lib/pixel";
 import { readResume, whopPreconnectLinks } from "@/components/funnel/whop-pay";
 
 /** Standalone checkout page (same two-step flow as the sales-page popup) for direct links. */
@@ -21,11 +23,17 @@ function Checkout() {
     const r = readResume();
     if (r?.key === "main") {
       if (r.paid) {
-        window.location.href = "/oto";
+        purchaseThenGo("main", mainPurchase(!!loadOrder()?.bump), "/oto");
         return;
       }
       setResume(true);
     }
+    if (!r)
+      track("InitiateCheckout", {
+        content_name: funnel.product,
+        value: funnel.prices.main,
+        currency: "USD",
+      });
     setReady(true);
   }, []);
 

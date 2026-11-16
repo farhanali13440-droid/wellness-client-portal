@@ -1,6 +1,8 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
-import { CheckoutFlow } from "@/components/funnel/checkout-flow";
+import { CheckoutFlow, mainPurchase } from "@/components/funnel/checkout-flow";
+import { loadOrder, funnel } from "@/lib/funnel-config";
+import { purchaseThenGo, track } from "@/lib/pixel";
 import { readResume, warmUpWhop } from "@/components/funnel/whop-pay";
 
 const Ctx = createContext<() => void>(() => {});
@@ -17,7 +19,7 @@ export function CheckoutModalProvider({ children }: { children: ReactNode }) {
     warmUpWhop(); // download Whop's checkout in the background while the buyer reads
     const r = readResume();
     if (r?.key !== "main") return;
-    if (r.paid) window.location.href = "/oto";
+    if (r.paid) purchaseThenGo("main", mainPurchase(!!loadOrder()?.bump), "/oto");
     else {
       setResume(true);
       setOpen(true);
@@ -25,7 +27,16 @@ export function CheckoutModalProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <Ctx.Provider value={() => setOpen(true)}>
+    <Ctx.Provider
+      value={() => {
+        track("InitiateCheckout", {
+          content_name: funnel.product,
+          value: funnel.prices.main,
+          currency: "USD",
+        });
+        setOpen(true);
+      }}
+    >
       {children}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-h-[100dvh] w-full max-w-lg overflow-y-auto rounded-none bg-white p-5 sm:max-h-[92vh] sm:rounded-xl sm:p-6">

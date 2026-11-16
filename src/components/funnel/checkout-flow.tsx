@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { funnel, loadOrder, money, saveOrder, type OrderDraft } from "@/lib/funnel-config";
 import { CtaButton } from "@/components/funnel/ui";
 import { WhopPay } from "@/components/funnel/whop-pay";
+import { purchaseThenGo, track } from "@/lib/pixel";
 
 const input =
   "w-full rounded-md border border-neutral-300 bg-white px-3 py-3 text-base text-black outline-none focus:border-snack-yellow-dark focus:ring-2 focus:ring-snack-yellow";
@@ -32,6 +33,7 @@ export function CheckoutFlow({ resumeToPayment }: { resumeToPayment?: boolean | 
     };
     setOrder(o);
     saveOrder(o);
+    track("Lead", { content_name: funnel.product, value: total, currency: "USD" });
     setStep(2);
   }
 
@@ -136,7 +138,7 @@ export function CheckoutFlow({ resumeToPayment }: { resumeToPayment?: boolean | 
           name={order.name || undefined}
           resumeKey="main"
           preload={step === 1}
-          onPaid={() => (window.location.href = "/oto")}
+          onPaid={() => purchaseThenGo("main", mainPurchase(order.bump), "/oto")}
         />
       </div>
 
@@ -213,4 +215,12 @@ function Bump({
       )}
     </label>
   );
+}
+
+/** Purchase event details for the front-end order ($17, or $44 with the bump). */
+export function mainPurchase(bump: boolean) {
+  return {
+    value: funnel.prices.main + (bump ? funnel.prices.bump : 0),
+    content_name: bump ? `${funnel.product} + Snack Templates` : funnel.product,
+  };
 }

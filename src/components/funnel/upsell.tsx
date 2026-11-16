@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { CtaButton, FunnelFooter } from "@/components/funnel/ui";
 import { readResume, WhopPay } from "@/components/funnel/whop-pay";
 import { loadOrder, money } from "@/lib/funnel-config";
+import { purchaseThenGo, track } from "@/lib/pixel";
 
 type Pay = { planId: string; product: string; price: number; resumeKey: string };
 
@@ -32,7 +33,8 @@ export function UpsellLayout({
   useEffect(() => {
     const r = readResume();
     if (r?.key !== pay.resumeKey) return;
-    if (r.paid) window.location.href = "/thank-you";
+    if (r.paid)
+      purchaseThenGo(pay.resumeKey, { value: pay.price, content_name: pay.product }, "/thank-you");
     else setOpen(true);
   }, [pay.resumeKey]);
 
@@ -61,7 +63,17 @@ export function UpsellLayout({
         <div className="mt-8 text-left">{children}</div>
 
         <div className="mx-auto mt-10 max-w-xl">
-          <CtaButton onClick={() => setOpen(true)} sub={yesSub}>
+          <CtaButton
+            onClick={() => {
+              track("InitiateCheckout", {
+                content_name: pay.product,
+                value: pay.price,
+                currency: "USD",
+              });
+              setOpen(true);
+            }}
+            sub={yesSub}
+          >
             {yesLabel}
           </CtaButton>
           <button onClick={onNo} className="mt-5 text-sm text-white/60 underline hover:text-white">
@@ -141,7 +153,13 @@ function UpsellPayDialog({
             email={order?.email}
             name={order?.name}
             resumeKey={pay.resumeKey}
-            onPaid={() => (window.location.href = "/thank-you")}
+            onPaid={() =>
+              purchaseThenGo(
+                pay.resumeKey,
+                { value: pay.price, content_name: pay.product },
+                "/thank-you",
+              )
+            }
           />
         </div>
         <p className="mt-3 text-center text-xs text-neutral-500">

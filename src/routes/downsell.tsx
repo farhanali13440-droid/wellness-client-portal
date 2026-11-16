@@ -28,9 +28,7 @@ function Downsell() {
       }
       yesLabel={`Yes — give me the templates for ${money(p.downsell)}`}
       yesSub="Add to your order · Covered by the 30-day guarantee"
-      onYes={() =>
-        goToPayment(funnel.paymentLinks.downsell, "/thank-you?oto=1", loadOrder()?.email)
-      }
+      onYes={() => goToPayment(funnel.paymentLinks.downsell, "/thank-you", loadOrder()?.email)}
       noLabel="No thanks — take me to my purchase"
       onNo={() => (window.location.href = "/thank-you")}
       demo={!funnel.paymentLinks.downsell}

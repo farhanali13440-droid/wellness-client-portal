@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AfterPaymentRouteImport } from './routes/after-payment'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as ConsultationRouteImport } from './routes/consultation'
 import { Route as DownsellRouteImport } from './routes/downsell'
@@ -19,6 +20,11 @@ import { Route as ThankYouRouteImport } from './routes/thank-you'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AfterPaymentRoute = AfterPaymentRouteImport.update({
+  id: '/after-payment',
+  path: '/after-payment',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CheckoutRoute = CheckoutRouteImport.update({
@@ -49,6 +55,7 @@ const ThankYouRoute = ThankYouRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/after-payment': typeof AfterPaymentRoute
   '/checkout': typeof CheckoutRoute
   '/consultation': typeof ConsultationRoute
   '/downsell': typeof DownsellRoute
@@ -57,6 +64,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/after-payment': typeof AfterPaymentRoute
   '/checkout': typeof CheckoutRoute
   '/consultation': typeof ConsultationRoute
   '/downsell': typeof DownsellRoute
@@ -66,6 +74,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/after-payment': typeof AfterPaymentRoute
   '/checkout': typeof CheckoutRoute
   '/consultation': typeof ConsultationRoute
   '/downsell': typeof DownsellRoute
@@ -75,12 +84,26 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/checkout' | '/consultation' | '/downsell' | '/oto' | '/thank-you'
+    | '/'
+    | '/after-payment'
+    | '/checkout'
+    | '/consultation'
+    | '/downsell'
+    | '/oto'
+    | '/thank-you'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/checkout' | '/consultation' | '/downsell' | '/oto' | '/thank-you'
+  to:
+    | '/'
+    | '/after-payment'
+    | '/checkout'
+    | '/consultation'
+    | '/downsell'
+    | '/oto'
+    | '/thank-you'
   id:
     | '__root__'
     | '/'
+    | '/after-payment'
     | '/checkout'
     | '/consultation'
     | '/downsell'
@@ -90,6 +113,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AfterPaymentRoute: typeof AfterPaymentRoute
   CheckoutRoute: typeof CheckoutRoute
   ConsultationRoute: typeof ConsultationRoute
   DownsellRoute: typeof DownsellRoute
@@ -104,6 +128,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/after-payment': {
+      id: '/after-payment'
+      path: '/after-payment'
+      fullPath: '/after-payment'
+      preLoaderRoute: typeof AfterPaymentRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/checkout': {
@@ -146,6 +177,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AfterPaymentRoute: AfterPaymentRoute,
   CheckoutRoute: CheckoutRoute,
   ConsultationRoute: ConsultationRoute,
   DownsellRoute: DownsellRoute,

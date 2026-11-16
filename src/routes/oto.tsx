@@ -27,7 +27,7 @@ function Oto() {
       }
       yesLabel={`Yes! Upgrade my order — ${money(p.oto)}`}
       yesSub="Add to your order · Covered by the 30-day guarantee"
-      onYes={() => goToPayment(funnel.paymentLinks.oto, "/thank-you?oto=1", loadOrder()?.email)}
+      onYes={() => goToPayment(funnel.paymentLinks.oto, "/thank-you", loadOrder()?.email)}
       noLabel="No thanks — I'll build the funnel myself from scratch"
       onNo={() => (window.location.href = "/downsell")}
       demo={!funnel.paymentLinks.oto}

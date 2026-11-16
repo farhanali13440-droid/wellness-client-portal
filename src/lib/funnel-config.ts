@@ -26,7 +26,7 @@ export const funnel = {
   },
 
   whopPlans: {
-    main: "", //            $17 — core product only
+    main: "plan_p5bocs9or7YZT", //            $17 — core product only
     mainWithBump: "", //    $44 — core product + Snack Templates (bump ticked)
     oto: "", //             $97 — Done-For-You Snack Funnel Kit
     downsell: "", //        $47 — Snack Funnel Templates

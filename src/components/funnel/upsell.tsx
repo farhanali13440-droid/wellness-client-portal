@@ -30,13 +30,11 @@ export function UpsellLayout({
   onNo: () => void;
 }) {
   const [open, setOpen] = useState(false);
-  const [stateId, setStateId] = useState<string>();
   useEffect(() => {
     const r = readResume();
-    if (r?.key === pay.resumeKey) {
-      setStateId(r.stateId);
-      setOpen(true);
-    }
+    if (r?.key !== pay.resumeKey) return;
+    if (r.paid) window.location.href = "/thank-you";
+    else setOpen(true);
   }, [pay.resumeKey]);
 
   return (
@@ -74,7 +72,7 @@ export function UpsellLayout({
       </section>
 
       <FunnelFooter />
-      <UpsellPayDialog pay={pay} open={open} onOpenChange={setOpen} stateId={stateId} />
+      <UpsellPayDialog pay={pay} open={open} onOpenChange={setOpen} />
     </main>
   );
 }
@@ -83,12 +81,10 @@ function UpsellPayDialog({
   pay,
   open,
   onOpenChange,
-  stateId,
 }: {
   pay: Pay;
   open: boolean;
   onOpenChange: (v: boolean) => void;
-  stateId?: string | undefined;
 }) {
   const order = typeof window !== "undefined" ? loadOrder() : null;
   return (
@@ -105,9 +101,7 @@ function UpsellPayDialog({
             planId={pay.planId}
             email={order?.email}
             name={order?.name}
-            buttonText={`Add to my order — ${money(pay.price)}`}
             resumeKey={pay.resumeKey}
-            stateId={stateId}
             onPaid={() => (window.location.href = "/thank-you")}
           />
         )}

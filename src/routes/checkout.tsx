@@ -15,10 +15,16 @@ export const Route = createFileRoute("/checkout")({
 
 function Checkout() {
   const [ready, setReady] = useState(false);
-  const [stateId, setStateId] = useState<string>();
+  const [resume, setResume] = useState(false);
   useEffect(() => {
     const r = readResume();
-    if (r?.key === "main") setStateId(r.stateId);
+    if (r?.key === "main") {
+      if (r.paid) {
+        window.location.href = "/oto";
+        return;
+      }
+      setResume(true);
+    }
     setReady(true);
   }, []);
 
@@ -33,7 +39,7 @@ function Checkout() {
 
       <div className="mx-auto grid max-w-5xl gap-6 px-4 py-6 md:grid-cols-[1fr_380px]">
         <div className="order-2 rounded-lg bg-white p-5 shadow-sm md:order-1">
-          {ready && <CheckoutFlow resumeStateId={stateId} />}
+          {ready && <CheckoutFlow resumeToPayment={resume} />}
         </div>
 
         <aside className="order-1 space-y-4 md:order-2">

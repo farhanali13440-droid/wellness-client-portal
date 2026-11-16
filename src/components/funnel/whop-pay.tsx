@@ -1,31 +1,70 @@
 import { lazy, Suspense, useEffect, useState } from "react";
 
-// Whop's embed touches `window`, so load it only in the browser.
-const WhopCheckoutEmbed = lazy(() =>
-  import("@whop/checkout/react").then((m) => ({ default: m.WhopCheckoutEmbed })),
-);
+/**
+ * Whop Elements checkout (card, plus Apple/Google Pay where available), rendered inside our page.
+ * Loaded only in the browser: the SDK is served from Whop's CDN.
+ */
+const WhopElementsCheckout = lazy(async () => {
+  const [{ WhopElements, Checkout, CheckoutElement }, { loadWhop }] = await Promise.all([
+    import("@whop/elements-react"),
+    import("@whop/elements"),
+  ]);
+  const elements = loadWhop();
+
+  function Inner({
+    planId,
+    email,
+    name,
+    returnUrl,
+    onPaid,
+  }: {
+    planId: string;
+    email: string | undefined;
+    name: string | undefined;
+    returnUrl: string;
+    onPaid: () => void;
+  }) {
+    return (
+      <WhopElements
+        elements={elements}
+        appearance={{ theme: { appearance: "light", accentColor: "amber" } }}
+      >
+        <Checkout
+          key={planId}
+          plan={planId}
+          returnUrl={returnUrl}
+          onComplete={(r) => {
+            if (r.result === "payment") onPaid();
+          }}
+          fallback={<Loading />}
+        >
+          <CheckoutElement
+            {...(email ? { buyerEmail: email, lockBuyerEmail: true } : {})}
+            {...(name ? { defaultValues: { billingDetails: { name } } } : {})}
+          />
+        </Checkout>
+      </WhopElements>
+    );
+  }
+  return { default: Inner };
+});
 
 /**
- * Whop's embedded card form (card, and Apple/Google Pay where available).
- * The buyer pays without leaving the page; `onPaid` fires when the payment succeeds.
+ * The payment step. Shows Whop's checkout for `planId`; `onPaid` runs when the payment succeeds.
  * With no `planId` (demo mode) it shows a "continue" button instead.
  */
 export function WhopPay({
   planId,
   email,
   name,
-  buttonText,
   resumeKey,
-  stateId,
   onPaid,
 }: {
   planId: string;
   email?: string | undefined;
   name?: string | undefined;
-  buttonText: string;
-  /** Identifies this payment step so a buyer returning from a bank / PayPal check can be put back here. */
+  /** Identifies this payment step, so a buyer returning from a bank (3-D Secure) check lands back here. */
   resumeKey: string;
-  stateId?: string | undefined;
   onPaid: () => void;
 }) {
   const [returnUrl, setReturnUrl] = useState<string>();
@@ -57,23 +96,17 @@ export function WhopPay({
   if (!returnUrl) return <Loading />;
 
   return (
-    <Suspense fallback={<Loading />}>
-      <WhopCheckoutEmbed
-        key={planId}
-        planId={planId}
-        theme="light"
-        skipRedirect
-        hidePrice={false}
-        disableEmail={!!email}
-        prefill={{ ...(email ? { email } : {}), ...(name ? { address: { name } } : {}) }}
-        themeOptions={{ accentColor: "#f2b705", borderRadius: 8, buttonText }}
-        collectPhoneNumbers={false}
-        returnUrl={returnUrl}
-        {...(stateId ? { stateId } : {})}
-        onComplete={() => onPaid()}
-        fallback={<Loading />}
-      />
-    </Suspense>
+    <div className="min-h-[320px]">
+      <Suspense fallback={<Loading />}>
+        <WhopElementsCheckout
+          planId={planId}
+          email={email}
+          name={name}
+          returnUrl={returnUrl}
+          onPaid={onPaid}
+        />
+      </Suspense>
+    </div>
   );
 }
 
@@ -86,13 +119,15 @@ function Loading() {
   );
 }
 
-/** Read and clear `?resume=…&state_id=…` left by Whop after an off-site authorization step. */
-export function readResume(): { key: string; stateId: string } | null {
+/**
+ * After an off-site bank check, Whop sends the buyer back to `?resume=<key>&payment=…&status=…`.
+ * Returns that (and cleans the URL), or null on a normal visit.
+ */
+export function readResume(): { key: string; paid: boolean } | null {
   if (typeof window === "undefined") return null;
   const q = new URLSearchParams(window.location.search);
   const key = q.get("resume");
-  const stateId = q.get("state_id");
-  if (!key || !stateId) return null;
+  if (!key) return null;
   window.history.replaceState(null, "", window.location.pathname);
-  return { key, stateId };
+  return { key, paid: q.get("status") === "succeeded" };
 }

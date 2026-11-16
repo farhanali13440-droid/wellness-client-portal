@@ -10,13 +10,15 @@ export const useOpenCheckout = () => useContext(Ctx);
 
 export function CheckoutModalProvider({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
-  const [stateId, setStateId] = useState<string>();
+  const [resume, setResume] = useState(false);
 
   // Buyer coming back from a bank / PayPal verification step → reopen at payment.
   useEffect(() => {
     const r = readResume();
-    if (r?.key === "main") {
-      setStateId(r.stateId);
+    if (r?.key !== "main") return;
+    if (r.paid) window.location.href = "/oto";
+    else {
+      setResume(true);
       setOpen(true);
     }
   }, []);
@@ -30,7 +32,7 @@ export function CheckoutModalProvider({ children }: { children: ReactNode }) {
           <DialogDescription className="sr-only">
             Enter your details, then pay securely by card.
           </DialogDescription>
-          {open && <CheckoutFlow resumeStateId={stateId} />}
+          {open && <CheckoutFlow resumeToPayment={resume} />}
         </DialogContent>
       </Dialog>
     </Ctx.Provider>

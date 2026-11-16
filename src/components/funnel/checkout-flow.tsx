@@ -11,9 +11,9 @@ const input =
  * Step 1: name, email, phone (+ the order bump).
  * Step 2: Whop's embedded card form for the right plan. On success → /oto.
  */
-export function CheckoutFlow({ resumeStateId }: { resumeStateId?: string | undefined }) {
+export function CheckoutFlow({ resumeToPayment }: { resumeToPayment?: boolean | undefined }) {
   const saved = typeof window !== "undefined" ? loadOrder() : null;
-  const [step, setStep] = useState<1 | 2>(resumeStateId && saved ? 2 : 1);
+  const [step, setStep] = useState<1 | 2>(resumeToPayment && saved ? 2 : 1);
   const [order, setOrder] = useState<OrderDraft>(
     saved ?? { name: "", email: "", phone: "", bump: false },
   );
@@ -130,9 +130,7 @@ export function CheckoutFlow({ resumeStateId }: { resumeStateId?: string | undef
             planId={planId}
             email={order.email}
             name={order.name}
-            buttonText={`Complete my order — ${money(total)}`}
             resumeKey="main"
-            stateId={resumeStateId}
             onPaid={() => (window.location.href = "/oto")}
           />
 
